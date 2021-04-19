@@ -3,6 +3,8 @@
 #include <SFML/System.hpp>
 #include <vector>
 #include <random>
+#include <iostream>
+#include <iomanip>
 
 //Direction the player is moving.
 enum PLAYER_DIRECTION {
@@ -63,6 +65,34 @@ struct SNAKE {
 
     sf::Vector2f getPos() const {
         return m_segments[0].getPosition();
+    }
+
+    int getScore() const {
+        return m_segments.size() - m_initSize;
+    }
+
+    void addScore() {
+        sf::RectangleShape segment(m_segments[m_segments.size() - 1]);
+        sf::Vector2f position = segment.getPosition();
+        int size = segment.getSize().x;
+
+        switch(direction) {
+            case UP:
+                position.y -= size;
+                break;
+            case DOWN:
+                position.y += size;
+                break;
+            case LEFT:
+                position.x -= size;
+                break;
+            case RIGHT:
+                position.x += size;
+                break;
+        };
+
+        segment.setPosition(position);
+        m_segments.push_back(segment);
     }
 
 private:
@@ -143,10 +173,24 @@ int main(int argc, char * argv[])
     sf::RectangleShape initial_shape(sf::Vector2f(10, 10));
     initial_shape.setPosition(player_position);
 
-    SNAKE player(initial_shape, 15); //Player object
+    int seed = 5;
+    if(argc > 1) {
+        if(std::atoi(argv[1]))
+            seed = std::atoi(argv[1]);
+    }
+    else
+        std::cout << "You can input your own seed as argument!" << std::endl;
+    
+    SNAKE player(initial_shape, 5); //Player object
     initial_shape.setFillColor(sf::Color::Red);
-    FOOD food(initial_shape, 10, 400, 0);
+
+    std::cout << "Current seed: " << seed << std::endl;
+
+    FOOD food(initial_shape, seed, 399, 0);
     food.update();
+
+    std::ios::sync_with_stdio(false);
+
     while(window.isOpen()) {
         sf::Event event;
 
@@ -188,14 +232,18 @@ int main(int argc, char * argv[])
 
         if(player.getPos() == food.getPos()) {
             food.update();
+            player.addScore();
         }
         //Update the player's segments'(body) positions
         player.update(player_position);
         player.draw(window);
         food.draw(window);
         window.display();
+        std::cout << "Score: " << std::setw(4) << std::right << player.getScore() << "\r";
         sf::sleep(sf::milliseconds(75));//Sleep for some time
     }
+
+    std::cout << "Score: " << std::setw(4) << std::right << player.getScore() << std::endl;
 
     return 0;
 }
