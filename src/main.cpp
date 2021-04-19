@@ -95,6 +95,14 @@ struct SNAKE {
         m_segments.push_back(segment);
     }
 
+    bool is_game_over() {
+        sf::Vector2f pos = m_segments[0].getPosition();
+        for(size_t i = 1; i < m_segments.size(); ++i)
+            if(pos == m_segments[i].getPosition())
+                return true;
+        return false;
+    }
+
 private:
     //Initial size of the player.
     size_t m_initSize;
@@ -241,6 +249,11 @@ int main(int argc, char * argv[])
         window.display();
         std::cout << "Score: " << std::setw(4) << std::right << player.getScore() << "\r";
         sf::sleep(sf::milliseconds(75));//Sleep for some time
+
+        if(player.is_game_over()) {
+            std::cout << std::setw(16) << "Game Over!" << std::endl;
+            window.close();
+        }
     }
 
     std::cout << "Score: " << std::setw(4) << std::right << player.getScore() << std::endl;
