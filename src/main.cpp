@@ -3,15 +3,22 @@
 #include <SFML/System.hpp>
 #include <vector>
 
+//Direction the player is moving.
 enum PLAYER_DIRECTION {
     UP,
     DOWN,
     LEFT,
     RIGHT
-}direction;
+}direction(RIGHT);
 
 struct SNAKE {
+
+    //We need some variables to create the snake.
+    //So, the default constructor is rendered useless
+    //and is therefore deleted.
     SNAKE() = delete;
+
+    //Constructor
     SNAKE(const sf::RectangleShape & shape, size_t initial_size) :
     m_initSize(initial_size), m_segments() {
         int size_x = shape.getSize().x;
@@ -19,44 +26,58 @@ struct SNAKE {
         int pos_x = shape.getPosition().x;
         int pos_y = shape.getPosition().y;
 
+        //Add the initial segments to the segments vector
+        //and create the initial body and the including the head.
         for(size_t i = 0; i < initial_size; ++i) {
-            sf::RectangleShape segment(shape);
-            segment.setPosition(pos_x - (i*size_x), pos_y);
-            segment.setFillColor(sf::Color::Black);
+            sf::RectangleShape segment(shape); //Current segment
+            segment.setPosition(pos_x - (i*size_x), pos_y); //Set the position based on 
+                                                            //the index, size and position.
+            sf::Color color;//Colour of the segment.
+                            //Create a gradient-like effect on the snake.
+            color.b = i * 5;
+            color.g = 256 - color.b;
+
+            segment.setFillColor(color);
             m_segments.push_back(segment);
         }
     }
 
-    void update() {
+    //Updates the position of the head and the body(segments).
+    void update(const sf::Vector2f & pos) {
+        //Access the segments from the back and assign the position of each segment(except the head)
+        //the position of the segment before it(m_segments[i-1]).
         for(size_t i = (m_segments.size() - 1); i > 0; --i) {
             sf::Vector2f prev_segment_pos = m_segments[i-1].getPosition();
             m_segments[i].setPosition(prev_segment_pos);
         }
-    }
-
-    void set_head_pos(const sf::Vector2f & pos) {
+        //Set the position of the head
         m_segments[0].setPosition(pos);
     }
 
+    //Draws all the segments.
     void draw(sf::RenderWindow & window) {
         for(auto & segment : m_segments)
             window.draw(segment);
     }
 
 private:
+    //Initial size of the player.
     size_t m_initSize;
-    std::vector<sf::RectangleShape> m_segments;
 
+    //Segments is a vector of RectangleShape objects. The snake is drawn by drawing
+    //each RectangleShape in this vector.
+    std::vector<sf::RectangleShape> m_segments;
 };
 
+//Manages keyboard input. Changes direction based on the keyboard input
 void keyboard_input() {
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) && direction != DOWN)
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && direction != DOWN)
         direction = UP;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) && direction != RIGHT)
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) && direction != RIGHT)
         direction = LEFT;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction != LEFT)
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) && direction != LEFT)
         direction = RIGHT;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction != UP)
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) && direction != UP)
         direction = DOWN;
 }
 
@@ -64,10 +85,18 @@ int main(int argc, char * argv[])
 {
     sf::RenderWindow window(sf::VideoMode(400, 400), "Snake Game");
     
+    //By player position, I mean the position of the 
+    //snake(player)'s head (or the first segment).
+    //The initial position is half the window width and window height.
     sf::Vector2f player_position(200, 200);
+
+    //Initial shape defines each segment of the player.
+    //Its position is where the player's head comes in
+    //the first frame.
     sf::RectangleShape initial_shape(sf::Vector2f(10, 10));
     initial_shape.setPosition(player_position);
-    SNAKE player(initial_shape, 5);
+
+    SNAKE player(initial_shape, 15); //Player object
 
     while(window.isOpen()) {
         sf::Event event;
@@ -77,8 +106,10 @@ int main(int argc, char * argv[])
                 window.close();
         }
 
-        window.clear(sf::Color::White);
+        window.clear(sf::Color::Black);
+
         keyboard_input();
+        //Update the player's position based on the direction
         switch(direction) {
             case UP:
                 player_position.y -= initial_shape.getSize().y;
@@ -94,21 +125,23 @@ int main(int argc, char * argv[])
                 break;
         };
 
-        if(player_position.x > 400)
+        //Maintain the player's position inside the window and make sure that the player doesn't
+        //go outside the viewport
+        if(player_position.x >= 400)
             player_position.x = 0;
         if(player_position.x < 0)
             player_position.x = 400;
 
-        if(player_position.y > 400)
+        if(player_position.y >= 400)
             player_position.y = 0;
         if(player_position.y < 0)
             player_position.y = 400;
 
-        player.set_head_pos(player_position);
-        player.update();
+        //Update the player's segments'(body) positions
+        player.update(player_position);
         player.draw(window);
         window.display();
-        sf::sleep(sf::milliseconds(100));
+        sf::sleep(sf::milliseconds(75));//Sleep for some time
     }
 
     return 0;
