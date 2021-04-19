@@ -1,7 +1,6 @@
 # Snake Game
 ## Introduction
-A simple snake game made in c++ using sfml.
-This is a part of my hobby. Please do check it out :smiley:.
+A simple snake game made in c++ using sfml.    :smiley:
 
 ## Compiling
 ### Linux
