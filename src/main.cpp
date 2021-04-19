@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <vector>
+#include <random>
 
 //Direction the player is moving.
 enum PLAYER_DIRECTION {
@@ -60,6 +61,10 @@ struct SNAKE {
             window.draw(segment);
     }
 
+    sf::Vector2f getPos() const {
+        return m_segments[0].getPosition();
+    }
+
 private:
     //Initial size of the player.
     size_t m_initSize;
@@ -67,6 +72,48 @@ private:
     //Segments is a vector of RectangleShape objects. The snake is drawn by drawing
     //each RectangleShape in this vector.
     std::vector<sf::RectangleShape> m_segments;
+};
+
+//Food object
+struct FOOD {
+    //Since the food is created by copying a sf::RectangleShape,
+    //and a seed for getting random positions,
+    //the default constructor is deleted. 
+    FOOD() = delete;
+
+    //Constructor
+    FOOD(const sf::RectangleShape & shape, int seed, int roof, int floor) :
+    m_food(shape), m_engine(), m_roof(roof), m_floor(floor) {
+        m_engine.seed(seed);
+    }
+
+    //Get a random position
+    void update() {
+        sf::Vector2f position;
+        int size_x = m_food.getSize().x;
+        
+        //Random distribution
+        std::uniform_int_distribution<int> distribution(m_floor/size_x, m_roof/size_x);
+        position.x = distribution(m_engine) * size_x;
+        position.y = distribution(m_engine) * size_x;
+        m_food.setPosition(position);
+    }
+
+    void draw(sf::RenderWindow & window) {
+        window.draw(m_food);
+    }
+
+    sf::Vector2f getPos() const {
+        return m_food.getPosition();
+    }
+
+private:
+    sf::RectangleShape m_food; //Food shape
+
+    int m_roof;
+    int m_floor;
+
+    std::default_random_engine m_engine; //Random engine
 };
 
 //Manages keyboard input. Changes direction based on the keyboard input
@@ -97,7 +144,9 @@ int main(int argc, char * argv[])
     initial_shape.setPosition(player_position);
 
     SNAKE player(initial_shape, 15); //Player object
-
+    initial_shape.setFillColor(sf::Color::Red);
+    FOOD food(initial_shape, 10, 400, 0);
+    food.update();
     while(window.isOpen()) {
         sf::Event event;
 
@@ -137,9 +186,13 @@ int main(int argc, char * argv[])
         if(player_position.y < 0)
             player_position.y = 400;
 
+        if(player.getPos() == food.getPos()) {
+            food.update();
+        }
         //Update the player's segments'(body) positions
         player.update(player_position);
         player.draw(window);
+        food.draw(window);
         window.display();
         sf::sleep(sf::milliseconds(75));//Sleep for some time
     }
