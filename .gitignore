@@ -31,6 +31,7 @@
 *.out
 *.app
 main
+game
 
 #Ide and code editor files
 .vscode/*
