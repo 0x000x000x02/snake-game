@@ -5,7 +5,7 @@ This is a part of my hobby. Please do check it out :smiley:.
 
 ## Compiling
 ### Linux
-Required packages to compile in linux
-- `libsfml-dev`
+- Install the following package first:
+    `libsfml-dev`
 
-After installing the necessary packages, execute `build.sh`.
+- Execute `build.sh`.
