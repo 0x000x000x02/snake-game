@@ -35,3 +35,5 @@ game.bin
 
 #Ide and code editor files
 .vscode/*
+x64/*
+.vs/*
