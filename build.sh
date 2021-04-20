@@ -1,1 +1,1 @@
-g++ -o game src/main.cpp -Wall -lsfml-window -lsfml-graphics -lsfml-system
+g++ -o game.bin src/main.cpp -Wall -lsfml-window -lsfml-graphics -lsfml-system
