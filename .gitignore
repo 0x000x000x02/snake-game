@@ -14,7 +14,8 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
+# The following line has been commented to include SFML dynamic libraries.
+# *.dll
 
 # Fortran module files
 *.mod
@@ -24,7 +25,8 @@
 *.lai
 *.la
 *.a
-*.lib
+# The following line has been commented to include SFML static libraries.
+# *.lib
 
 # Executables
 *.exe
